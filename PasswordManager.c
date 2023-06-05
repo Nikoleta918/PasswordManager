@@ -5,6 +5,7 @@
 
 char * buffer = 0;
 long length;
+#define MAX_LINE 1024
 
 struct loginCredentials{
     char masterUsername[20];
@@ -31,7 +32,7 @@ void enterLoginCredentials(struct loginCredentials log){
 
 }
 
-void login(struct loginCredentials log){
+int login(){
     char inputMasterUsername[20];
     FILE *fpointer;
 
@@ -41,7 +42,7 @@ void login(struct loginCredentials log){
 
     fpointer=fopen("C:\\Users\\super\\Desktop\\C_Projects\\masterCredentials.txt","r"); 
 
-    if (fpointer == NULL) return NULL;
+    if (fpointer == NULL) return 1;
 
     // move the file pointer to the end of the file
     fseek(fpointer, 0, SEEK_END); 
@@ -81,19 +82,77 @@ void login(struct loginCredentials log){
     fclose(fpointer);
 
     if(strcmp(string,inputMasterUsername)==0){
-        printf("access granted");
+        printf("access granted\n");
     }
     else{
-        printf("no");
+        printf("no\n");
+        exit(0);
     }
 
 
 }
 
+
+int inputNewPassword(){
+
+    char newService[20];
+    char serviceUsername[MAX_LINE];
+    FILE *f1;
+    FILE *f2;
+    char mybuffer[MAX_LINE];
+
+    printf("welcome\n");
+    printf("What service do you wish to sign in? \n");
+    f1=fopen("C:\\Users\\super\\Desktop\\C_Projects\\savedServices.txt","w");
+    scanf("%s",newService);
+    fputs(newService,f1);
+    fclose(f1);
+
+    printf("The service is %s.\n", newService);
+    f1 = fopen("C:\\Users\\super\\Desktop\\C_Projects\\savedServices.txt", "a");
+
+    if (f1 == NULL)
+    {
+        printf("Error opening file.\n");
+        return 1;
+    }
+
+  // continually accept lines of user input until the user enters quit
+    printf("Input new Username:\n");
+  printf("Enter 'done' to exit.\n");
+    do 
+    {
+        // read a line of input from the terminal (stdin) and store it into buffer
+        fgets(mybuffer, MAX_LINE, stdin);
+        
+
+        // when the user enters quit, stop
+        if (strcmp(mybuffer, "done\n") == 0){
+        break;
+        }
+
+        // write the buffer to the file
+        fputs(mybuffer, f1);
+        // accept input indefinitely
+    } while (1);
+    fclose(f1);
+    //printf("Your master Password is %s.\n", log.masterPassword);
+
+
+    f2 = fopen("C:\\Users\\super\\Desktop\\C_Projects\\savedServices.txt", "r");
+
+    while(!feof(f2))  //while not end of file
+        fgets(serviceUsername, 1024, f2);  //read last line of file
+    printf("The service %s is saved with username: %s\n", newService,serviceUsername);
+    printf("You have saved a new Password\n");
+    fclose(f2);
+}
+
 int main(){
     struct loginCredentials log;
-    enterLoginCredentials(log);
-    login(log);
+    //enterLoginCredentials(log);
+    //login(log);
+    inputNewPassword();
     return 0;
 
 }
