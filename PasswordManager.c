@@ -2,48 +2,37 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
-
+//variables
 char * buffer = 0;
 long length;
 #define MAX_LINE 1024
 char wrd[256];
 int thepassword=0;
+char masterPassword[20];
 
-struct loginCredentials{
-    char masterUsername[20];
-    char masterPassword[20];    
-};
-
-
-void enterLoginCredentials(struct loginCredentials log){
+void enterLoginCredentials(){
 
     FILE *fpointer;
     fpointer=fopen("C:\\Users\\super\\Desktop\\C_Projects\\masterCredentials.txt","w");
 
     printf("Enter Master Username: \n");
-    scanf("%s", log.masterUsername);  //we dont need to use &masterUsername because in c string=char array that already points to the first element of the array
-    fputs(log.masterUsername,fpointer);
+    //we dont need to use &masterUsername because in c string=char array that already points to the first element of the array
+    scanf("%s", masterPassword);  
+    fputs(masterPassword,fpointer);
 
-   // printf("Enter Master Password:\n ");
-   // scanf("%s", log.masterPassword); 
-    //fputs(log.masterPassword,fpointer);
-
-    printf("Your master Username is %s.\n", log.masterUsername);
-    //printf("Your master Password is %s.\n", log.masterPassword);
+    printf("Your master Username is %s.\n", masterPassword);
 
     fclose(fpointer);
 
 }
-
 
 int login(){
     char inputMasterUsername[20];
     FILE *fpointer;
 
     printf("Enter Username: \n");
-    scanf("%s",inputMasterUsername);  //we dont need to use &masterUsername because in c string=char array that already points to the first element of the array
-    printf(inputMasterUsername);
+    //we dont need to use &masterUsername because in c string=char array that already points to the first element of the array
+    scanf("%s",inputMasterUsername);  
 
     fpointer=fopen("C:\\Users\\super\\Desktop\\C_Projects\\masterCredentials.txt","r"); 
 
@@ -52,7 +41,7 @@ int login(){
     // move the file pointer to the end of the file
     fseek(fpointer, 0, SEEK_END); 
 
-    // fseek(file) will return the current value of the position indicator, 
+    // ftell(file) will return the current value of the position indicator, 
     // which will give us the number of characters in the file
     int length = ftell(fpointer);
 
@@ -90,13 +79,12 @@ int login(){
         printf("access granted\n");
     }
     else{
-        printf("no\n");
+        printf("access denied.Try again\n");
         exit(0);
     }
 
 
 }
-
 
 int inputNewPassword(){
 
@@ -108,9 +96,13 @@ int inputNewPassword(){
 
     printf("welcome\n");
     printf("What service do you wish to sign in? \n");
+
     f1=fopen("C:\\Users\\super\\Desktop\\C_Projects\\savedServices.txt","a");
+
     scanf("%s",newService);
+    //we write the newService the user wants to login to the file savedServices
     fputs(newService,f1);
+
     fclose(f1);
 
     printf("The service is %s.\n", newService);
@@ -122,15 +114,15 @@ int inputNewPassword(){
         return 1;
     }
 
-  // continually accept lines of user input until the user enters quit
+    // continually accept lines of user input until the user enters quit
     printf("Input new Username:\n");
-  printf("Enter 'done' to exit.\n");
+    printf("Enter 'done' to exit.\n");
+
     do 
     {
         // read a line of input from the terminal (stdin) and store it into buffer
         fgets(mybuffer, MAX_LINE, stdin);
         
-
         // when the user enters quit, stop
         if (strcmp(mybuffer, "done\n") == 0){
         break;
@@ -139,48 +131,56 @@ int inputNewPassword(){
         // write the buffer to the file
         fputs(mybuffer, f1);
         // accept input indefinitely
+
     } while (1);
+
     fclose(f1);
-    //printf("Your master Password is %s.\n", log.masterPassword);
 
 
     f2 = fopen("C:\\Users\\super\\Desktop\\C_Projects\\savedServices.txt", "r");
 
-    while(!feof(f2))  //while not end of file
-        fgets(serviceUsername, 1024, f2);  //read last line of file
+    //while not end of file
+    while(!feof(f2)){  
+        //read last line of file
+        fgets(serviceUsername, 1024, f2);  
+    }
+
     printf("The service %s is saved with username: %s\n", newService,serviceUsername);
     printf("You have saved a new Password\n");
+
     fclose(f2);
 }
 
 void deletePasswords(){
+    //by opening and closing the file with the intention to write,all passwords gone
     fclose(fopen("savedServices.txt", "w"));
 }
 
-
-
 int retrievePassword(){
     FILE *fp;
+    //variables
     char word[15],str[200];
     char ch;
     int i=0,j=0,pos=0,cmp,flag=0,thepassword=0;
+    //enter the service for which you need the password
     printf("Enter a word to search\n");
     scanf("%s",word);
+
     fp=fopen("C:\\Users\\super\\Desktop\\C_Projects\\savedServices.txt","r");
+    //while it is not the end of file
     while((ch=fgetc(fp))!=EOF)
     {
-
+        //if ch=null character or change of line character,then we possibly are near a word so we will need to compare
         if((ch==' ')||(ch=='\n'))
         {
            pos++;
            cmp=strcmp(str,word);
            if(cmp==0)
            {
-               printf("%s is found at the position %d from the beginning\n",word,pos);
                thepassword=pos+1;
-               printf("the password initialy is:%d\n",thepassword);
                flag=1;
            }
+           //go to the next word and delete the existing word stored in the buffer named str
            for(i=j;i>=0;i--)
            {
                str[i]='\0';
@@ -188,96 +188,110 @@ int retrievePassword(){
            j=0;
            continue;
         }
+        //store character ch inside str buffer
         str[j]=ch;
         j++;
     }
+    //we use this block to compare our word with the last word of the file(because EOF does not count the last word)
     pos++;
     cmp=strcmp(str,word);
-    if(cmp==0)
-    {
-        printf("%s is found at %d position from the beginning\n",word,pos);
-    }
-    else if(flag==0)
+    if(cmp==1)
     {
         printf("%s is not found in this file\n",word);
     }
-
-   //------------------------------------------------------------------------- 
-
-    //pos einai h grammi pou thelw ara auto to xreiazomai
-    
-    printf("the password before the return is:%d\n",thepassword);
-
-
-        // file pointer will be used to open/read the file
+        // reset file pointer to start of file
         rewind(fp);
 
-  // used to store the filename and each line from the file
-  char buffer[200];
+    // used to store the filename and each line from the file
+    char buffer[200];
 
-  // stores the line number of the line the user wants to read from the file
-  int read_line = thepassword;
-  printf("the password is:%d\n",thepassword);
-  printf("read line is:%d\n",read_line);
+    // stores the line number of the line the user wants to read from the file
+    int read_line = thepassword;
 
 
-  // open the the file in read mode
+    // open the the file in read mode
 
-  // if the file failed to open, exit with an error message and status
-  if (fp == NULL)
-  {
-    printf("Error opening file.\n");
-    return 1;
-  }
-
-  // we'll keep reading the file so long as keep_reading is true, and we'll 
-  // keep track of the current line of the file using current_line
-  bool keep_reading = true;
-  int current_line = 1;
-  do 
-  {
-    // read the next line from the file, store it into buffer
-    fgets(buffer, 200, fp);
-
-    // if we've reached the end of the file, we didn't find the line
-    if (feof(fp))
+    // if the file failed to open, exit with an error message and status
+    if (fp == NULL)
     {
-      // stop reading from the file, and tell the user the number of lines in 
-      // the file as well as the line number they were trying to read as the 
-      // file is not large enough
-      keep_reading = false;
-      printf("File %d lines.\n", current_line-1);
-      printf("Couldn't find line %d.\n", read_line);
-    }
-    // if we've found the line the user is looking for, print it out
-    else if (current_line == read_line)
-    {
-      keep_reading = false;
-      printf("Line:\n%s", buffer);
+        printf("Error opening file.\n");
+        return 1;
     }
 
-    // continue to keep track of the current line we are reading
-    current_line++;
+    // we'll keep reading the file so long as keep_reading is true, and we'll 
+    // keep track of the current line of the file using current_line
+    bool keep_reading = true;
+    int current_line = 1;
+    do 
+    {
+        // read the next line from the file, store it into buffer
+        fgets(buffer, 200, fp);
 
-  } while (keep_reading);
+        // if we've reached the end of the file, we didn't find the line
+        if (feof(fp))
+        {
+        // stop reading from the file, and tell the user the number of lines in 
+        // the file as well as the line number they were trying to read as the 
+        // file is not large enough
+        keep_reading = false;
+        printf("Couldn't find line %d.\n", read_line);
+        }
+
+        // if we've found the line the user is looking for, print it out
+        else if (current_line == read_line)
+        {
+        keep_reading = false;
+        printf("The password is:\n%s", buffer);
+        }
+
+        // continue to keep track of the current line we are reading
+        current_line++;
+
+    } while (keep_reading);
 
   // close our access to the file
   fclose(fp);
 
   return 0;
-    //return thepassword;
 }
 
 
 
 int main(){
-    struct loginCredentials log;
-    //enterLoginCredentials(log);
-    //login(log);
-    //inputNewPassword();
-    //inputNewPassword();
-    //deletePasswords();
-    retrievePassword();
+    int num=0;
+    int flag=0;
+    printf("Choose one of the following options to use PasswordManager\n");
+    printf("1:enter your login credentials to secure your passwords.Always do it at the begging of your use of password manager\n");
+    printf("2:login to your existing account\n");
+    printf("3:input a new password to save it\n");
+    printf("4:delete all your saved passwords\n");
+    printf("5:retrieve any password you have saved\n");
+    printf("press any other key to terminate the session\n");
+    do{
+    scanf("%d",&num);
+    switch(num)
+    {
+    case 1:
+        enterLoginCredentials();
+        break;
+    case 2:
+        login();
+        break;
+    case 3:
+        inputNewPassword();
+        break;
+    case 4:
+        deletePasswords();
+        break;
+    case 5:
+        retrievePassword();
+        break;
+    default:
+        flag=1;
+        break;
+    }
+    }while(flag=0);
+
     return 0;
 
 }
